@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*
-from multiprocessing import cpu_count
-
-print(cpu_count())
-num_cores =cpu_count()*3
-num_partitions =num_cores
-from multiprocessing import Pool
+# from multiprocessing import cpu_count
+#
+# print(cpu_count())
+# num_cores =cpu_count()*3
+# num_partitions =num_cores
+# from multiprocessing import Pool
 from functools import wraps
 import time
+import pandas as pd
 import subprocess
 import os
-from helper.keyword_extraction.keyextract_tfidf import *
-from helper.keyword_extraction.keyextract_textrank import *
-import synonyms
+from helper.keyword_extraction.keyextract_tfidf import tfidf_getKeywords
+from helper.keyword_extraction.keyextract_textrank import textrank_getKeywords
+# import synonyms
 def func_timer(function):
     '''
     timer
@@ -119,64 +120,61 @@ def get_keywords(f, method='textrank'):
         path_out = dir + '/' + file_name + 'tfidf_key.csv'
         keywords = tfidf_getKeywords(f, path_out, path_stop, topk, pos)
     return keywords
+#
+# @func_timer
+# def get_keywords_parallelly(files, func):
+#     time_start = time.time()
+#     files_split = np.array_split(files, num_partitions)
+#     pool = Pool(num_cores)
+#     pool.map(func, files_split)
+#     pool.close()
+#     pool.join()
+#     print("format the data(remove redundants),            耗时:" + str((time.time() - time_start) / 60) + ' 分')
+#
+# def compute( df ):
+#     close_words = []
+#     print('computing -->len', len(df))
+#     for index, row in df.iterrows():
+#         # print(row['keys'])
+#         # print(type(row.keys))
+#         # original_word = "人脸"
+#
+#         original_word = row['keys']
+#         print(index,' original_word=', original_word)
+#         word, score = synonyms.nearby(original_word)
+#         # print('word:', word)
+#         # print('word:', score)
+#         selected = []
+#         for i, s in enumerate(score):
+#             if s > 0.5 and original_word != word[i]:
+#                 selected.append(word[i])
+#
+#         close_word = ','.join(selected)
+#         if len(close_word) == 0:
+#             close_word = '无'
+#         print('close_word:', close_word)
+#         close_words.append(close_word)
+#
+#     print('computing --done')
+#     # print('final close_word=type = ', type(close_words))
+#     df['close_words'] = pd.DataFrame({'close_words': close_words})
+#     return df
 
-@func_timer
-def get_keywords_parallelly(files, func):
-    time_start = time.time()
-    files_split = np.array_split(files, num_partitions)
-    pool = Pool(num_cores)
-    pool.map(func, files_split)
-    pool.close()
-    pool.join()
-    print("format the data(remove redundants),            耗时:" + str((time.time() - time_start) / 60) + ' 分')
-
-def compute( df ):
-    close_words = []
-    print('computing -->len', len(df))
-    for index, row in df.iterrows():
-        # print(row['keys'])
-        # print(type(row.keys))
-        # original_word = "人脸"
-
-        original_word = row['keys']
-        print(index,' original_word=', original_word)
-        word, score = synonyms.nearby(original_word)
-        # print('word:', word)
-        # print('word:', score)
-        selected = []
-        for i, s in enumerate(score):
-            if s > 0.5 and original_word != word[i]:
-                selected.append(word[i])
-
-        close_word = ','.join(selected)
-        if len(close_word) == 0:
-            close_word = '无'
-        print('close_word:', close_word)
-        close_words.append(close_word)
-
-    print('computing --done')
-    # print('final close_word=type = ', type(close_words))
-    df['close_words'] = pd.DataFrame({'close_words': close_words})
-    return df
-
-
-@func_timer
-def get_synonyms_parallelly(df, func):
-    time_start = time.time()
-    df_split = np.array_split(df, num_partitions)
-    pool = Pool(num_cores)
-    dfs= pool.map(func, df_split)
-    print('pool.map len(dfs)=', len(dfs))
-    # for i, df1 in enumerate(dfs):
-    #     print('save ',i,' file')
-    #     df1.to_csv(str(i)+".csv", index=False)
-
-    df = pd.concat(dfs)
-    print('concat len(df)=', len(df))
-    pool.close()
-    pool.join()
-    print("get_synonyms_parallelly            耗时:" + str((time.time() - time_start) / 60) + ' 分')
-    return df
+#
+# @func_timer
+# def get_synonyms_parallelly(df, func):
+#     time_start = time.time()
+#     df_split = np.array_split(df, num_partitions)
+#     pool = Pool(num_cores)
+#     dfs= pool.map(func, df_split)
+#     print('pool.map len(dfs)=', len(dfs))
+#
+#     df = pd.concat(dfs)
+#     print('concat len(df)=', len(df))
+#     pool.close()
+#     pool.join()
+#     print("get_synonyms_parallelly            耗时:" + str((time.time() - time_start) / 60) + ' 分')
+#     return df
 
 @func_timer
 def rename_columns(files, column_name):
@@ -191,52 +189,6 @@ def rename_columns(files, column_name):
 @func_timer
 def compute_keywords():
 
-    # files = [
-    #     'data_orginal/chnsenticorp/1.csv',
-    #     'data_orginal/chnsenticorp/0.csv',
-    #     'data_orginal/weibo_senti_100k/1.csv',
-    #     'data_orginal/weibo_senti_100k/0.csv',
-    #     'data_orginal/cnews_10/体育.csv',
-    #     'data_orginal/cnews_10/娱乐.csv',
-    #     'data_orginal/cnews_10/家居.csv',
-    #     'data_orginal/cnews_10/房产.csv',
-    #     'data_orginal/cnews_10/教育.csv',
-    #     'data_orginal/cnews_10/时尚.csv',
-    #     'data_orginal/cnews_10/时政.csv',
-    #     'data_orginal/cnews_10/游戏.csv',
-    #     'data_orginal/cnews_10/科技.csv',
-    #     'data_orginal/cnews_10/财经.csv'
-        # 'data-500/chnsenticorp/1.csv',
-        # 'data-500/chnsenticorp/0.csv',
-        # 'data-500/weibo_senti_100k/1.csv',
-        # 'data-500/weibo_senti_100k/0.csv',
-        #
-        # 'data-500/cnews_10/体育.csv',
-        # 'data-500/cnews_10/娱乐.csv',
-        # 'data-500/cnews_10/家居.csv',
-        # 'data-500/cnews_10/房产.csv',
-        # 'data-500/cnews_10/教育.csv',
-        # 'data-500/cnews_10/时尚.csv',
-        # 'data-500/cnews_10/时政.csv',
-        # 'data-500/cnews_10/游戏.csv',
-        # 'data-500/cnews_10/科技.csv',
-        # 'data-500/cnews_10/财经.csv',
-        #
-        # 'data-2000/cnews_10/体育.csv',
-        # 'data-2000/cnews_10/娱乐.csv',
-        # 'data-2000/cnews_10/家居.csv',
-        # 'data-2000/cnews_10/房产.csv',
-        # 'data-2000/cnews_10/教育.csv',
-        # 'data-2000/cnews_10/时尚.csv',
-        # 'data-2000/cnews_10/时政.csv',
-        # 'data-2000/cnews_10/游戏.csv',
-        # 'data-2000/cnews_10/科技.csv',
-        # 'data-2000/cnews_10/财经.csv',
-        # 'data-2000/weibo_senti_100k/1.csv',
-        # 'data-2000/weibo_senti_100k/0.csv',
-        # 'data-2000/chnsenticorp/1.csv',
-        # 'data-2000/chnsenticorp/0.csv'
-    # ]
     all_files = ['1.csv', '0.csv', '体育.csv',
                  '娱乐.csv', '家居.csv', '房产.csv',
                  '教育.csv', '时尚.csv', '游戏.csv',
@@ -276,99 +228,6 @@ def compute_keywords():
         all_keys_df.to_csv(str(len(all_keys_df)) + 'len_all_keys' + '.csv', index=False)
         return str(len(all_keys_df)) + 'len_all_keys' + '.csv'
 
-
-
-    #                 if '_key.csv' in file_name:
-    #                     parent_dir = path_class + dir + '/'
-    #                     print(parent_dir + file_name)
-    #                     pd_file = pd.read_csv(parent_dir + file_name)
-    #                     pd_file.drop(pd_file[pd_file.union.isnull()].index, inplace=True)
-    #                     all_words=[]
-    #                     for words in pd_file['Intersection']:
-    #                         all_words.extend(words.split(','))
-    #                     for word in set(all_words):
-    #                         if len(word) < 1:
-    #                             continue
-    #                         if word in all_key_words:
-    #                             word_index = all_key_words.index(word)
-    #                             key_closewords.append(all_key_closewords[word_index])
-    #                             key_words.append(word)
-    #
-    #                     df_new = pd.DataFrame({'key_words':key_words,'close_words':key_closewords})
-    #                     df_new.to_csv(parent_dir+str(len(df_new))+'closeWords'+'_'+file_name.split('_key')[0]+'.csv',index=False)
-    # for root, dirs, files in os.walk(root_dir):
-    #     for _root, _dir, _files in os.walk(dirs):
-    #         for file_name in _files:
-    #             print(file_name)
-                # if '_key.csv' in file_name:
-                #     parent_dir = root_dir + dir + '/'
-                #     print(parent_dir + file_name)
-                #     pd_file = pd.read_csv(parent_dir + file_name)
-                #     pd_file.drop(pd_file[pd_file.union.isnull()].index, inplace=True)
-                #     all_words = []
-                #     for words in pd_file['Intersection']:
-                #         all_words.extend(words.split(','))
-                #     for word in set(all_words):
-                #         if len(word) < 1:
-                #             continue
-                #         if word in all_key_words:
-                #             word_index = all_key_words.index(word)
-                #             key_closewords.append(all_key_closewords[word_index])
-                #             key_words.append(word)
-    # for file in files:
-    #     textrank_keys = get_keywords(file, method='textrank')
-    #     tfidf_keys = get_keywords(file, method='tfidf')
-    #     jiao = list(set(textrank_keys) & set(tfidf_keys))
-    #     dir_index = file.rfind('/')
-    #     save_dir = file[:dir_index]
-    #     file_name = file[dir_index + 1:-4]
-    #     key_save_path = save_dir + '/' + file_name + 'size' + str(len(jiao))+'_inserction_key.csv'
-    #     key_df = pd.DataFrame({'key': jiao})
-    #     key_df.to_csv(key_save_path, index=False)
-
-
-    # to_merge_files = ['data_orginal/chnsenticorp/1.csv', 'data_orginal/chnsenticorp/0.csv',
-    #                   'data_orginal/weibo_senti_100k/1.csv', 'data_orginal/weibo_senti_100k/0.csv']
-    # merged_df = merge_path(to_merge_files, 'data_orginal/1_0.csv')
-    # merged_df.drop_duplicates(subset='sms_content', keep='first', inplace=True)
-    # get_keywords_parallelly(files, compute_keywords_textrank)
-
-    # compute_keywords_textrank(files)
-    # files = [
-    #     'data-500/chnsenticorp/1_key.csv',
-    #     'data-500/chnsenticorp/0_key.csv',
-    #     'data-500/weibo_senti_100k/1_key.csv',
-    #     'data-500/weibo_senti_100k/0_key.csv',
-    #
-    #     'data-500/cnews_10/体育_key.csv',
-    #     'data-500/cnews_10/娱乐_key.csv',
-    #     'data-500/cnews_10/家居_key.csv',
-    #     'data-500/cnews_10/房产_key.csv',
-    #     'data-500/cnews_10/教育_key.csv',
-    #     'data-500/cnews_10/时尚_key.csv',
-    #     'data-500/cnews_10/时政_key.csv',
-    #     'data-500/cnews_10/游戏_key.csv',
-    #     'data-500/cnews_10/科技_key.csv',
-    #     'data-500/cnews_10/财经_key.csv',
-    #
-    #     'data-2000/cnews_10/体育_key.csv',
-    #     'data-2000/cnews_10/娱乐_key.csv',
-    #     'data-2000/cnews_10/家居_key.csv',
-    #     'data-2000/cnews_10/房产_key.csv',
-    #     'data-2000/cnews_10/教育_key.csv',
-    #     'data-2000/cnews_10/时尚_key.csv',
-    #     'data-2000/cnews_10/时政_key.csv',
-    #     'data-2000/cnews_10/游戏_key.csv',
-    #     'data-2000/cnews_10/科技_key.csv',
-    #     'data-2000/cnews_10/财经_key.csv',
-    #
-    #     'data-2000/weibo_senti_100k/1_key.csv',
-    #     'data-2000/weibo_senti_100k/0_key.csv',
-    #     'data-2000/chnsenticorp/1_key.csv',
-    #     'data-2000/chnsenticorp/0_key.csv'
-    # ]
-    # get_keywords_parallelly(files, compute_keywords_tfidf)
-    # compute_keywords_tfidf(files)
 
 @func_timer
 def combine_keywords():
@@ -555,9 +414,9 @@ def generate_small_data_set():
 
 
 if __name__ == '__main__':
-
+    print('start')
     #1.generate 500 2000 size data set 生成小样本数据集
-    generate_small_data_set()
+    # generate_small_data_set()
     #2. compute keywords for each class
     # compute_keywords()
             # # save_keywords_of_a_class()

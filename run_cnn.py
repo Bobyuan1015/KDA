@@ -13,10 +13,7 @@ import tensorflow as tf
 from sklearn import metrics
 
 from cnn_model import TCNNConfig, TextCNN
-from data.data_orginal import read_vocab, read_category, batch_iter, process_file, build_vocab
-
-
-
+from data.cnews_loader import read_vocab, read_category, batch_iter, process_file, build_vocab
 
 
 

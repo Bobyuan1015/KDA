@@ -12,11 +12,7 @@ import tensorflow as tf
 from sklearn import metrics
 
 from rnn_model import TRNNConfig, TextRNN
-from data.data_orginal import read_vocab, read_category, batch_iter, process_file, build_vocab
-
-
-
-
+from data.cnews_loader import read_vocab, read_category, batch_iter, process_file, build_vocab
 
 
 def get_time_dif(start_time):

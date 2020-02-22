@@ -13,13 +13,13 @@ preprocess_cnews()
 generate_small_data_set()
 
 # 3. compute keywords for each classx
-keywords_file = compute_keywords()
+# keywords_file = compute_keywords()
 
 #4. get closewords from the website
-web_search_close_keys(keywords_file)
+# web_search_close_keys(keywords_file)
 
 #5. keywords data augmentation
 os.system('python kda.py')
 
 #6. train all dataset
-os.system('./start.sh')
+# os.system('./start.sh')

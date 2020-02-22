@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import jieba.posseg
 import jieba.analyse
-from sklearn import feature_extraction
+# from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 """
@@ -21,17 +21,15 @@ from sklearn.feature_extraction.text import CountVectorizer
 def dataPrepos(text, stopkey,pos):
     l = []
     # pos = ['n','v','vn']
-
-        #'nz',#名词
-        #'v',
-     # 'vd',
+    #'nz',#名词
+    #'v',
+    # 'vd',
     #'vn',#动词
-     #'l',
-     #'a',#形容词
-     # 'd'#副词
-       #]  # 定义选取的词性
+    #'l',
+    #'a',#形容词
+    # 'd'#副词
+    #]  # 定义选取的词性
     seg = jieba.posseg.cut(text)  # 分词
-    #print("dataProcess jieba.posseg.cut text=",text)
     for i in seg:
         if i.word not in stopkey and i.flag in pos:  # 去停用词 + 词性筛选
         # if i.word not in stopkey:  # 去停用词 + 词性筛选
@@ -92,88 +90,6 @@ def getKeywords_tfidf(data,stopkey,topK,pos):
     result = pd.DataFrame({"id": ids, "title": titles, "key": keys},columns=['id','title','key'])
     return result
 
-#
-# def getKeywords(filename,data,stopkey,topK):
-#     labels, abstractList, textrank_keys = data['label'], data['content'], data['textrank_keys']
-#     corpus = [] # 将所有文档输出到一个list中，一行就是一个文档
-#     print('getKeywords   1')
-#     for index in range(len(labels)):
-#         text = '%s' % ( abstractList[index]) # 拼接标题和摘要
-#         text = dataPrepos(text, stopkey) # 文本预处理
-#         text = " ".join(text) # 连接成字符串，空格分隔
-#         if index == 106:
-#             print('107：',text, '   -----------',abstractList[106])
-#         corpus.append(text)
-#
-#
-#     # 1、构建词频矩阵，将文本中的词语转换成词频矩阵
-#     vectorizer = CountVectorizer(min_df=1, token_pattern='(?u)\\b\\w+\\b')# very important, in default case of CV, it will drop word with less than 2 of the length of the word's chars
-#     print('getKeywords   2')
-#     X = vectorizer.fit_transform(corpus) # 词频矩阵,a[i][j]:表示j词在第i个文本中的词频
-#     print('getKeywords   3')
-#     # 2、统计每个词的tf-idf权值
-#     transformer = TfidfTransformer()
-#     print('getKeywords   4')
-#     tfidf = transformer.fit_transform(X)
-#     # 3、获取词袋模型中的关键词
-#     word = vectorizer.get_feature_names()
-#
-#     # print('len(word)=', len(word))
-#     #
-#     # print(word.index('哈'))
-#     # 4、获取tf-idf矩阵，a[i][j]表示j词在i篇文本中的tf-idf权重
-#     # 5、打印词语权重
-#     keys = []
-#
-#     for i, row in enumerate(tfidf):
-#         # print(u"-------这里输出第", i+1 , u"篇文本的词语tf-idf------", filename)
-#         df_word, df_weight = [], [] # 当前文章的所有词汇列表、词汇对应权重列表
-#         tf_idf_sentence = row.A[0]
-#         len_sentence = 0
-#         if i == 107:
-#             print(tf_idf_sentence)
-#         for index, word_tf_idf in enumerate(tf_idf_sentence):
-#             if i == 107:
-#                 print(word_tf_idf)
-#
-#             if word_tf_idf > 0:
-#                 len_sentence = len_sentence+1
-#                 # if i == 51:
-#                 #     print('-',len_sentence)
-#                 df_word.append(word[index])
-#                 df_weight.append(word_tf_idf)
-#         topK = int(len_sentence / 3) if int(len_sentence / 3) > 1 else 1
-#
-#         df_word = pd.DataFrame(df_word, columns=['word'])
-#         df_weight = pd.DataFrame(df_weight, columns=['weight'])
-#
-#         word_weight = pd.concat([df_word, df_weight], axis=1)  # 拼接词汇列表和权重列表
-#         word_weight = word_weight.sort_values(by="weight", ascending=False)  # 按照权重值降序排列
-#         keyword = np.array(word_weight['word'])  # 选择词汇列并转成数组格式
-#         print(' len(keyword)=', len(keyword), ' len(df_word)=', len(df_word), '  index=', i,'  topK=',topK)
-#         print('keyword:', keyword)
-#         if len(keyword) > 0:
-#             word_split = [keyword[x] for x in range(0, topK)] # 抽取前topK个词汇作为关键词
-#             word_split = [x for x in word_split if len(x) > 1]  # 抽取前topK个词汇作为关键词
-#             if len(word_split) < 2:
-#                 print('tfidf keywords <2:', word_split, '  index=', i, '  :', filename)
-#             print('getKeywords   5      '+str(i+1), u"篇文本的词语tf-idf------", filename)
-#             # content_keys = []
-#             # for key in word_split:
-#             #     if key in content_segs[i]:
-#             #         content_keys.append(key)
-#             # content_keys = "".join(word_split)
-#             # keys.append(word_split.encode("utf-8"))
-#             # print('content:',abstractList[i],' segs:',content_segs[i],' keys:',content_keys)
-#             keys.append(",".join(word_split))
-#         else:
-#             print('add null  yf')
-#             keys.append(",".join(''))
-#         print('getKeywords   6      ' + str(i+1), u"篇文本的词语tf-idf------", filename)
-#     result = pd.DataFrame({'label': labels, "content": abstractList, "textrank_keys": textrank_keys, "tfidf_keys": keys},
-#                           columns=['label', 'content', 'textrank_keys', 'tfidf_keys'])
-#     print('getKeywords   7          ' + str(i+1), u"篇文本的词语tf-idf------", filename)
-#     return result
 
 def sort_coo(coo_matrix):
     tuples = zip(coo_matrix.col, coo_matrix.data)
@@ -228,54 +144,7 @@ def getKeywords(filename, data, stopkey, pos):
     keywords = extract_topn_from_vector(word, sorted_items, 1000)
     return keywords
 
-    # word = vectorizer.get_feature_names()
-    #
-    # print('len(word)=', len(word))
-    # #
-    # print(word.index('哈'))
-    # # 4、获取tf-idf矩阵，a[i][j]表示j词在i篇文本中的tf-idf权重
-    # # 5、打印词语权重
-    # keys = []
-    #
-    # for i, row in enumerate(tfidf):
-    #     # print(u"-------这里输出第", i+1 , u"篇文本的词语tf-idf------", filename)
-    #     df_word, df_weight = [], [] # 当前文章的所有词汇列表、词汇对应权重列表
-    #     tf_idf_sentence = row.A[0]
-    #     len_sentence = 0
-    #     if i == 107:
-    #         print(tf_idf_sentence)
-    #     for index, word_tf_idf in enumerate(tf_idf_sentence):
-    #         if i == 107:
-    #             print(word_tf_idf)
-    #
-    #         if word_tf_idf > 0:
-    #             len_sentence = len_sentence+1
-    #             # if i == 51:
-    #             #     print('-',len_sentence)
-    #             df_word.append(word[index])
-    #             df_weight.append(word_tf_idf)
-    #     topK = int(len_sentence / 3) if int(len_sentence / 3) > 1 else 1
-    #     df_sentence = pd.DataFrame({'word':df_word,'weight':df_weight})
-    #     df_sentence = df_sentence.sort_values(by="weight", ascending=False)  # 按照权重值降序排列
-    #     keyword = np.array(df_sentence['word'])  # 选择词汇列并转成数组格式
-    #     print(' len(keyword)=', len(keyword), ' len(df_word)=', len(df_word), '  index=', i,'  topK=',topK)
-    #     print('keyword:', keyword)
-    #     if len(keyword) > 0:
-    #         word_split = [keyword[x] for x in range(0, topK)] # 抽取前topK个词汇作为关键词
-    #         word_split = [x for x in word_split if len(x) > 1]  # 抽取前topK个词汇作为关键词
-    #         if len(word_split) < 2:
-    #             print('tfidf keywords <2:', word_split, '  index=', i, '  :', filename)
-    #         print('getKeywords   5      '+str(i+1), u"篇文本的词语tf-idf------", filename)
-    #
-    #         keys.append(",".join(word_split))
-    #     else:
-    #         print('add null  yf')
-    #         keys.append(",".join(''))
-    #     print('getKeywords   6      ' + str(i+1), u"篇文本的词语tf-idf------", filename)
-    # result = pd.DataFrame({'label': labels, "content": abstractList, "tfidf_keys": keys},
-    #                       columns=['label', 'content',  'tfidf_keys'])
-    # print('getKeywords   7          ' + str(i+1), u"篇文本的词语tf-idf------", filename)
-    # return result
+
 
 def tfidf_getKeywords(path_in, path_out, path_stop, topk, pos = ['n','v','vn','a','vd']):
     df = pd.read_csv(path_in)
