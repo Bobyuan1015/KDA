@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*
 from multiprocessing import cpu_count
 
-from webSearchCloseWords import web_search
-
 print(cpu_count())
 num_cores =cpu_count()*3
 num_partitions =num_cores
@@ -11,8 +9,8 @@ from functools import wraps
 import time
 import subprocess
 import os
-from keyword_extraction.keyextract_tfidf import *
-from keyword_extraction.keyextract_textrank import *
+from helper.keyword_extraction.keyextract_tfidf import *
+from helper.keyword_extraction.keyextract_textrank import *
 import synonyms
 def func_timer(function):
     '''
@@ -73,7 +71,7 @@ def merge_csv(files, merge_path, sep=','):
                 df = pd.read_csv(f)
             dfs.append(df)
     concat_df = pd.concat(dfs, axis=0, ignore_index=True)
-    concat_df.to_csv(merge_path,index=False)
+    concat_df.to_csv(merge_path, index=False)
     print('merged_csv.columns= ', concat_df.columns)
     return concat_df
 
@@ -189,6 +187,7 @@ def rename_columns(files, column_name):
         df = df.rename(columns={df.columns[2]: column_name})
         df.to_csv(file, index=False)
 
+
 @func_timer
 def compute_keywords():
 
@@ -242,7 +241,7 @@ def compute_keywords():
                  '娱乐.csv', '家居.csv', '房产.csv',
                  '教育.csv', '时尚.csv', '游戏.csv',
                  '科技.csv', '财经.csv', '时政.csv']
-    root_dir = 'data_orginal/'
+    root_dir = 'data/data_orginal/'
     #1.分别得到每个类别的关键词 == tfidf 交集 textrank
     for root, dirs_p, files in os.walk(root_dir):
         all_keys = []
@@ -275,7 +274,7 @@ def compute_keywords():
             final_all_keys ^= set(key_a_set)
         all_keys_df = pd.DataFrame({'finale_all_keys': list(final_all_keys)})
         all_keys_df.to_csv(str(len(all_keys_df)) + 'len_all_keys' + '.csv', index=False)
-
+        return root_dir + str(len(all_keys_df)) + 'len_all_keys' + '.csv'
 
 
 
@@ -523,32 +522,36 @@ def replace_words(file_in, file_out):
     df_out.fillna('0')
     df_out.to_csv(file_out,index=False)
 
+
+
 def generate_small_data_set():
 
-    subprocess.getstatusoutput('rm -rf data_orginal/cnews_10/whole.csv')
-    subprocess.getstatusoutput('rm -rf data_orginal/chnsenticorp/whole.csv')
-    subprocess.getstatusoutput('rm -rf data_orginal/weibo_senti_100k/whole.csv')
-    subprocess.getstatusoutput('rm -rf data-500/cnews_10/*')
-    subprocess.getstatusoutput('rm -rf data-500/chnsenticorp/*')
-    subprocess.getstatusoutput('rm -rf data-500/weibo_senti_100k/*')
-    subprocess.getstatusoutput('rm -rf data-2000/cnews_10/*')
-    subprocess.getstatusoutput('rm -rf data-2000/chnsenticorp/*')
-    subprocess.getstatusoutput('rm -rf data-2000/weibo_senti_100k/*')
+    subprocess.getstatusoutput('rm -rf data/data_orginal/cnews_10/whole.csv')
+    subprocess.getstatusoutput('rm -rf data/data_orginal/chnsenticorp/whole.csv')
+    subprocess.getstatusoutput('rm -rf data/data_orginal/weibo_senti_100k/whole.csv')
+    subprocess.getstatusoutput('rm -rf data/data_500/cnews_10/*')
+    subprocess.getstatusoutput('rm -rf data/data_500/chnsenticorp/*')
+    subprocess.getstatusoutput('rm -rf data/data_500/weibo_senti_100k/*')
+    subprocess.getstatusoutput('rm -rf data/data_2000/cnews_10/*')
+    subprocess.getstatusoutput('rm -rf data/data_2000/chnsenticorp/*')
+    subprocess.getstatusoutput('rm -rf data/data_2000/weibo_senti_100k/*')
     sizes = [500, 2000]
     datasets = ['chnsenticorp', 'cnews_10', 'weibo_senti_100k']
     for dataset in datasets:
-        dir = 'data_orginal/' + dataset + '/'
-
+        dir = 'data/data_orginal/' + dataset + '/'
         original_files = [dir + 'train.csv', dir + 'test.csv', dir + 'dev.csv']
-        merge_csv(original_files, dir + 'whole.csv', sep='\t')
+        merge_csv(original_files, dir + 'whole.csv')
         split_data_by_class(dir + 'whole.csv', dir)
         for size in sizes:
-            dir_sub_data_set = 'data-' + str(size) + '/' + dataset + '/'
+            dir_sub_data_set = 'data/data_' + str(size) + '/' + dataset + '/'
             subprocess.getstatusoutput('mkdir -p ' + dir_sub_data_set)
             split_data_by_class(dir + 'whole.csv', dir_sub_data_set, size)
             merge_path(dir_sub_data_set, 'train.csv', '')
             print('cp -rf ' + dir + '/dev.csv ' + dir + 'test.csv  ' + dir_sub_data_set)
             subprocess.getstatusoutput('cp -rf ' + dir + 'dev.csv ' + dir + 'test.csv  ' + dir_sub_data_set)
+
+
+
 
 
 if __name__ == '__main__':

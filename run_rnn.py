@@ -12,7 +12,7 @@ import tensorflow as tf
 from sklearn import metrics
 
 from rnn_model import TRNNConfig, TextRNN
-from data_orginal.cnews_loader import read_vocab, read_category, batch_iter, process_file, build_vocab
+from data.data_orginal import read_vocab, read_category, batch_iter, process_file, build_vocab
 
 
 
@@ -197,25 +197,24 @@ if __name__ == '__main__':
         t_name = sys.argv[3]
         t_th = sys.argv[2]
         data_dir = sys.argv[4]
-        base_dir = data_dir + '/' + t_name
+        base_dir = 'data/' + data_dir + '/' + t_name
         classes = sys.argv[5].split('-')
 
         train_dir = os.path.join(base_dir, 'train.csv')
         test_dir = os.path.join(base_dir, 'test.csv')
         val_dir = os.path.join(base_dir, 'dev.csv')
-        vocab_dir = os.path.join('data_orginal/'+t_name, 'vocab.tsv')
+        vocab_dir = os.path.join('data/data_orginal/'+t_name, 'vocab.csv')
 
         if not os.path.exists(vocab_dir):  # 如果不存在词汇表，重建
             print(' vocab_dir not exists: ',vocab_dir)
-            build_vocab('data_orginal/'+t_name+'/whole.csv', vocab_dir, config.vocab_size)
+            build_vocab('data/data_orginal/'+t_name+'/whole.csv', vocab_dir, config.vocab_size)
         categories, cat_to_id = read_category(classes)
         words, word_to_id = read_vocab(vocab_dir)
         config.vocab_size = len(words)
         config.num_classes = len(classes)
 
         mode_name = 'textrnn'
-
-        save_dir = 'checkpoints/checkpoints_'+t_name+'/'+mode_name+'_'+t_name+"_"+data_dir+'_'+t_th+'th'
+        save_dir = 'checkpoints/' + t_name + '/' + mode_name + '_' + t_name + "_" + data_dir + '_' + t_th + 'th'
         print('save_dir:', save_dir)
         save_path = os.path.join(save_dir, 'best_validation')  # 最佳验证结果保存路径
 

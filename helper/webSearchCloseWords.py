@@ -14,6 +14,8 @@ import pathlib
 import re
 import requests
 
+from helper.cut import func_timer
+
 project_path = str(pathlib.Path(os.path.abspath(os.curdir)))
 sys.path.append(project_path)
 print(sys.path)
@@ -26,11 +28,13 @@ xpaths=['/html/body/div[1]/div[2]/div[2]/p[11]//text()',
         '/html/body/div[1]/div[2]/div[2]/p[13]//text()',
         '/html/body/div[1]/div[2]/div[2]/p[2]//text()']
 
+
 def web_search(text,closeWords=None):
-    """Get the industry info of the sms from baidu search .
-    :param text: sms's signature.        type: str
-    :return: the content of the sms's company's abstract info    type:str
+    """Get the synonyms from a very official chinese synonym web
+    :param text: a chinese word phrase.        type: str
+    :return: a list of close words to the param word, then join the list into a list   type:str
     """
+
     if len(get_chinese(text)) <1:
         return '0'
     if closeWords != '0':
@@ -75,6 +79,14 @@ def web_search(text,closeWords=None):
             # time.sleep(3)
             return '0'
 
+
+
+@func_timer
+def web_search_close_keys(file):
+    df = pd.read_csv(file)
+    df.fillna('0')
+    df['close_words'] = df.apply(lambda row: web_search(row['finale_all_keys'], row['close_words']), axis=1)
+    df.to_csv('/home/y/disk-2t/workplace/play/for_paper/kda/keys_.csv',index=False)
 
 def get_chinese(content):
     """

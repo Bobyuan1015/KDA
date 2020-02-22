@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-python cut.py
-python kda.py
+
 rm -rf log.txt experiments.csv checkpoints/*
 
 tasks="run_cnn.py run_rnn.py"
