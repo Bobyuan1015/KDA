@@ -12,16 +12,11 @@ import tensorflow as tf
 from sklearn import metrics
 
 from rnn_model import TRNNConfig, TextRNN
-from data.cnews_loader import read_vocab, read_category, batch_iter, process_file, build_vocab
+from data_orginal.cnews_loader import read_vocab, read_category, batch_iter, process_file, build_vocab
 
-base_dir = 'data/cnews'
-train_dir = os.path.join(base_dir, 'cnews.train.txt')
-test_dir = os.path.join(base_dir, 'cnews.test.txt')
-val_dir = os.path.join(base_dir, 'cnews.val.txt')
-vocab_dir = os.path.join(base_dir, 'cnews.vocab.txt')
 
-save_dir = 'checkpoints/textrnn'
-save_path = os.path.join(save_dir, 'best_validation')  # 最佳验证结果保存路径
+
+
 
 
 def get_time_dif(start_time):
@@ -82,9 +77,14 @@ def train():
     print("Time usage:", time_dif)
 
     # 创建session
-    session = tf.Session()
-    session.run(tf.global_variables_initializer())
-    writer.add_graph(session.graph)
+
+    gpu_config = tf.ConfigProto(allow_soft_placement=True)
+    gpu_config.gpu_options.allow_growth = True
+    sess = tf.Session(config=gpu_config)
+
+    # session = tf.Session()
+    sess.run(tf.global_variables_initializer())
+    writer.add_graph(sess.graph)
 
     print('Training and evaluating...')
     start_time = time.time()
@@ -102,20 +102,20 @@ def train():
 
             if total_batch % config.save_per_batch == 0:
                 # 每多少轮次将训练结果写入tensorboard scalar
-                s = session.run(merged_summary, feed_dict=feed_dict)
+                s = sess.run(merged_summary, feed_dict=feed_dict)
                 writer.add_summary(s, total_batch)
 
             if total_batch % config.print_per_batch == 0:
                 # 每多少轮次输出在训练集和验证集上的性能
                 feed_dict[model.keep_prob] = 1.0
-                loss_train, acc_train = session.run([model.loss, model.acc], feed_dict=feed_dict)
-                loss_val, acc_val = evaluate(session, x_val, y_val)  # todo
+                loss_train, acc_train = sess.run([model.loss, model.acc], feed_dict=feed_dict)
+                loss_val, acc_val = evaluate(sess, x_val, y_val)  # todo
 
                 if acc_val > best_acc_val:
                     # 保存最好结果
                     best_acc_val = acc_val
                     last_improved = total_batch
-                    saver.save(sess=session, save_path=save_path)
+                    saver.save(sess=sess, save_path=save_path)
                     improved_str = '*'
                 else:
                     improved_str = ''
@@ -124,9 +124,9 @@ def train():
                 msg = 'Iter: {0:>6}, Train Loss: {1:>6.2}, Train Acc: {2:>7.2%},' \
                       + ' Val Loss: {3:>6.2}, Val Acc: {4:>7.2%}, Time: {5} {6}'
                 print(msg.format(total_batch, loss_train, acc_train, loss_val, acc_val, time_dif, improved_str))
-            
+
             feed_dict[model.keep_prob] = config.dropout_keep_prob
-            session.run(model.optim, feed_dict=feed_dict)  # 运行优化
+            sess.run(model.optim, feed_dict=feed_dict)  # 运行优化
             total_batch += 1
 
             if total_batch - last_improved > require_improvement:
@@ -139,11 +139,14 @@ def train():
 
 
 def test():
-    print("Loading test data...")
+    print("Loading test data... " )
     start_time = time.time()
     x_test, y_test = process_file(test_dir, word_to_id, cat_to_id, config.seq_length)
 
-    session = tf.Session()
+    gpu_config = tf.ConfigProto(allow_soft_placement=True)
+    gpu_config.gpu_options.allow_growth = True
+    session = tf.Session(config=gpu_config)
+    # session = tf.Session()
     session.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
     saver.restore(sess=session, save_path=save_path)  # 读取保存的模型
@@ -152,6 +155,10 @@ def test():
     loss_test, acc_test = evaluate(session, x_test, y_test)
     msg = 'Test Loss: {0:>6.2}, Test Acc: {1:>7.2%}'
     print(msg.format(loss_test, acc_test))
+
+    results = open( 'experiments.csv', 'a+', encoding='utf-8')
+    results.write(t_name + ',' + data_dir + ',' + mode_name + ',' + t_th + ',' + str(loss_test) + ',' + str(acc_test) + '\n')
+    results.close()
 
     batch_size = 128
     data_len = len(x_test)
@@ -182,19 +189,40 @@ def test():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2 or sys.argv[1] not in ['train', 'test']:
-        raise ValueError("""usage: python run_rnn.py [train / test]""")
 
-    print('Configuring RNN model...')
-    config = TRNNConfig()
-    if not os.path.exists(vocab_dir):  # 如果不存在词汇表，重建
-        build_vocab(train_dir, vocab_dir, config.vocab_size)
-    categories, cat_to_id = read_category()
-    words, word_to_id = read_vocab(vocab_dir)
-    config.vocab_size = len(words)
-    model = TextRNN(config)
+    print('Configuring RNN model...',sys.argv)
 
-    if sys.argv[1] == 'train':
-        train()
+    if len(sys.argv) == 6 and sys.argv[1] in ['train', 'test']:
+        config = TRNNConfig()
+        t_name = sys.argv[3]
+        t_th = sys.argv[2]
+        data_dir = sys.argv[4]
+        base_dir = data_dir + '/' + t_name
+        classes = sys.argv[5].split('-')
+
+        train_dir = os.path.join(base_dir, 'train.csv')
+        test_dir = os.path.join(base_dir, 'test.csv')
+        val_dir = os.path.join(base_dir, 'dev.csv')
+        vocab_dir = os.path.join('data_orginal/'+t_name, 'vocab.tsv')
+
+        if not os.path.exists(vocab_dir):  # 如果不存在词汇表，重建
+            print(' vocab_dir not exists: ',vocab_dir)
+            build_vocab('data_orginal/'+t_name+'/whole.csv', vocab_dir, config.vocab_size)
+        categories, cat_to_id = read_category(classes)
+        words, word_to_id = read_vocab(vocab_dir)
+        config.vocab_size = len(words)
+        config.num_classes = len(classes)
+
+        mode_name = 'textrnn'
+
+        save_dir = 'checkpoints/checkpoints_'+t_name+'/'+mode_name+'_'+t_name+"_"+data_dir+'_'+t_th+'th'
+        print('save_dir:', save_dir)
+        save_path = os.path.join(save_dir, 'best_validation')  # 最佳验证结果保存路径
+
+        model = TextRNN(config)
+        if sys.argv[1] == 'train':
+            train()
+        else:
+            test()
     else:
-        test()
+        print('usage: parameters are less than 4: python file, number of running the task, task name')
