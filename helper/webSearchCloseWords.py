@@ -84,9 +84,10 @@ def web_search(text,closeWords=None):
 @func_timer
 def web_search_close_keys(file):
     df = pd.read_csv(file)
+    df['close_words'] = '0'
     df.fillna('0')
     df['close_words'] = df.apply(lambda row: web_search(row['finale_all_keys'], row['close_words']), axis=1)
-    df.to_csv('/home/y/disk-2t/workplace/play/for_paper/kda/keys_.csv',index=False)
+    df.to_csv('keys_.csv',index=False)
 
 def get_chinese(content):
     """

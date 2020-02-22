@@ -274,7 +274,7 @@ def compute_keywords():
             final_all_keys ^= set(key_a_set)
         all_keys_df = pd.DataFrame({'finale_all_keys': list(final_all_keys)})
         all_keys_df.to_csv(str(len(all_keys_df)) + 'len_all_keys' + '.csv', index=False)
-        return root_dir + str(len(all_keys_df)) + 'len_all_keys' + '.csv'
+        return str(len(all_keys_df)) + 'len_all_keys' + '.csv'
 
 
 
