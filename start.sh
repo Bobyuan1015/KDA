@@ -8,9 +8,10 @@ names="cnews_10 weibo_senti_100k chnsenticorp"
 #names="chnsenticorp"
 
 numbers=10
-#data_size="data_500"
-data_size="data_500_kda5000 data_2000_kda5000 data_500 data_2000 data_orginal"
+#numbers=2
 
+data_size="data_500_kda5000 data_2000_kda5000 data_500 data_2000 data_orginal"
+#data_size="data_500_kda5000"
 
 for name in $names;
   do

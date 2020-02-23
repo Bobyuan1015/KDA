@@ -2,7 +2,7 @@
 
 import sys
 from collections import Counter
-
+import pandas as pd
 import numpy as np
 import tensorflow.keras as kr
 
@@ -42,16 +42,25 @@ def open_file(filename, mode='r'):
 
 def read_file(filename):
     """读取文件数据"""
-    contents, labels = [], []
-    with open_file(filename) as f:
-        for line in f:
-            try:
-                label, content = line.strip().split('\t')
-                if content:
-                    contents.append(list(native_content(content)))
-                    labels.append(native_content(label))
-            except:
-                pass
+    df = pd.read_csv(filename)
+    contents = df['content'].tolist()
+    labels = df['label'].tolist()
+    if labels[0] == 0 or labels[0] == 1:
+        labels = [str(x) for x in labels]
+    # contents, labels = [], []
+    # with open_file(filename) as f:
+    #     i = 0
+    #     for line in f:
+    #         try:
+    #             if i == 0:
+    #                 i = i + 1
+    #                 continue
+    #             label, content = line.strip().split('\t')
+    #             if content:
+    #                 contents.append(list(native_content(content)))
+    #                 labels.append(native_content(label))
+    #         except:
+    #             pass
     return contents, labels
 
 
@@ -81,9 +90,9 @@ def read_vocab(vocab_dir):
     return words, word_to_id
 
 
-def read_category():
+def read_category(categories):
     """读取分类目录，固定"""
-    categories = ['体育', '财经', '房产', '家居', '教育', '科技', '时尚', '时政', '游戏', '娱乐']
+    # categories = ['体育', '财经', '房产', '家居', '教育', '科技', '时尚', '时政', '游戏', '娱乐']
 
     categories = [native_content(x) for x in categories]
 
@@ -100,10 +109,12 @@ def to_words(content, words):
 def process_file(filename, word_to_id, cat_to_id, max_length=600):
     """将文件转换为id表示"""
     contents, labels = read_file(filename)
-
+    #print(contents[:10],labels[:10])
     data_id, label_id = [], []
     for i in range(len(contents)):
         data_id.append([word_to_id[x] for x in contents[i] if x in word_to_id])
+        #print(cat_to_id)
+        #print(type(cat_to_id))
         label_id.append(cat_to_id[labels[i]])
 
     # 使用keras提供的pad_sequences来将文本pad为固定长度

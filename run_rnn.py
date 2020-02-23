@@ -196,6 +196,7 @@ if __name__ == '__main__':
         base_dir = 'data/' + data_dir + '/' + t_name
         classes = sys.argv[5].split('-')
 
+
         train_dir = os.path.join(base_dir, 'train.csv')
         test_dir = os.path.join(base_dir, 'test.csv')
         val_dir = os.path.join(base_dir, 'dev.csv')

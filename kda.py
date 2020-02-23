@@ -81,7 +81,7 @@ def search_replacement(sentence, words):
 
 
 def kda(file_path, dict_path, newsize):
-    print('kda open ',file_path,'.csv')
+    print('kda open ',file_path)
     df = pd.read_csv(file_path+'.csv')
     row_num = len(df)
 
@@ -92,23 +92,16 @@ def kda(file_path, dict_path, newsize):
     for index, row in df_synonyms.iterrows():
         synonym_dict[row['final_all_keys']] = row['close_words'].split(',')
 
-    print('kda------0')
-
     da_sentences = []
     da_sentences_number = []
     da_total = 0
     for index, row in df.iterrows():
         sentence = row['content']
-        print('kda------index=',index)
-
         keywords_to_be_replaced = search_replacement(sentence,df_synonyms['final_all_keys'].tolist())
         new_sents = augment(sentence, keywords_to_be_replaced, synonym_dict)
-        print('kda------new_sents=', len(new_sents))
         da_sentences.append(new_sents)
         da_total += len(new_sents)
         da_sentences_number.append(len(new_sents))
-    print('kda------1')
-
     df['da_sentences'] = pd.DataFrame({'da_sentences': da_sentences})
     df['da_sentences_number'] = pd.DataFrame({'da_sentences_number': da_sentences_number})
     # df.to_csv(file_path+'_daDebug.csv', index=False) #for debugging
@@ -125,10 +118,10 @@ def kda(file_path, dict_path, newsize):
             selected_number += 1
 
         if rest_number <= selected_number:
-            print('rest_number=', rest_number, ' selected_number=', selected_number)
+            # print('rest_number=', rest_number, ' selected_number=', selected_number)
             selected_number = rest_number
         for i in range(selected_number):#the generated sentences
-            print('selected_number=',selected_number,'  i=',i,' len(row[da_sentences]=',len(row['da_sentences']))
+            # print('i=',i,' len(row[da_sentences]=',len(row['da_sentences']))
             new_sents.append(row['da_sentences'][i])
             new_labels.append(row['label'])
         rest_number -= selected_number
@@ -185,7 +178,6 @@ def merge_path(path, out_file_name, sub_name_in_file='clean'):
 if __name__ == "__main__":
 
     data_kda_folders = ['data/data_500_kda5000/', 'data/data_2000_kda5000/']
-    # data_kda_folders = ['data/data_2000_kda5000/']
     data_cut_folders = ['data/data_500', 'data/data_2000']
     dict_path = "final0129.csv"
     time_start = time.time()
@@ -195,7 +187,7 @@ if __name__ == "__main__":
         print(index,'   ',folder_p)
         subprocess.getstatusoutput('rm -rf ' + folder_p)
         subprocess.getstatusoutput('cp -rf ' + data_cut_folders[index] + ' ' + folder_p)
-        # subprocess.getstatusoutput('find ' + folder_p + ' -name train.csv |xargs rm')
+        subprocess.getstatusoutput('find ' + folder_p + ' -name train.csv |xargs rm')
         # subprocess.getstatusoutput('find ' + folder_p + ' -name dev.csv |xargs rm')
         # subprocess.getstatusoutput('find ' + folder_p + ' -name test.csv |xargs rm')
         for root, dirs_p, files in os.walk(folder_p):
@@ -205,7 +197,7 @@ if __name__ == "__main__":
 
                         # if '_key.csv' in file_name:
                             # toKDA_files.append()
-                        if 'train' in file_name :
+                        if 'test' not in file_name and 'dev' not in file_name:
                             kda(folder_p + dir + '/' + file_name.split('.csv')[0], dict_path, 5000)
                             # toKDA_files.append(folder_p+dir + '/' + file_name)
                             # print('file_name=', file_name)

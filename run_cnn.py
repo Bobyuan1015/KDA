@@ -174,7 +174,7 @@ def test():
         y_pred_cls[start_id:end_id] = session.run(model.y_pred_cls, feed_dict=feed_dict)
 
     # 评估
-    print("Precision, Recall and F1-Score...")
+    print("Precision, Recall and F1-Score... type(y_test_cls)=",type(y_test_cls),y_test_cls.shape,"y_pred_cls=", type(y_pred_cls),y_pred_cls.shape,' categories=',categories)
     print(metrics.classification_report(y_test_cls, y_pred_cls, target_names=categories))
 
     # 混淆矩阵
