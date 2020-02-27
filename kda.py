@@ -80,7 +80,7 @@ def search_replacement(sentence, words):
     return searched_list
 
 
-def kda(file_path, dict_path, newsize):
+def kda(dir, file_path, dict_path, newsize):
     print('kda open ',file_path)
     df = pd.read_csv(file_path+'.csv')
     row_num = len(df)
@@ -95,13 +95,21 @@ def kda(file_path, dict_path, newsize):
     da_sentences = []
     da_sentences_number = []
     da_total = 0
+    hit_keywords = []
     for index, row in df.iterrows():
         sentence = row['content']
-        keywords_to_be_replaced = search_replacement(sentence,df_synonyms['final_all_keys'].tolist())
+        keywords_to_be_replaced = search_replacement(sentence, df_synonyms['final_all_keys'].tolist())
+        hit_keywords.extend(keywords_to_be_replaced)
         new_sents = augment(sentence, keywords_to_be_replaced, synonym_dict)
         da_sentences.append(new_sents)
         da_total += len(new_sents)
         da_sentences_number.append(len(new_sents))
+
+    print(dir)
+    # df1 = df_synonyms.loc[df_synonyms['final_all_keys'] in list()]
+    df1 = df_synonyms[df_synonyms.final_all_keys.isin(set(hit_keywords))]
+    df1.to_csv(dir + 'key.csv', index=False)
+
     df['da_sentences'] = pd.DataFrame({'da_sentences': da_sentences})
     df['da_sentences_number'] = pd.DataFrame({'da_sentences_number': da_sentences_number})
     # df.to_csv(file_path+'_daDebug.csv', index=False) #for debugging
@@ -129,7 +137,7 @@ def kda(file_path, dict_path, newsize):
     print('rest_number=', rest_number)
     da_df = pd.DataFrame({'label':new_labels, 'content':new_sents})
     da_df.to_csv(file_path+'_kda.csv', index=False)
-    return file_path+'_kda.csv'
+    return file_path+'_kda.csv' ,
 
 def merge_csv(files, merge_path):
     # , lineterminator = '\n'))
@@ -183,7 +191,7 @@ if __name__ == "__main__":
     time_start = time.time()
     toKDA_files = []
     toMERG_files = []
-    for index,folder_p in enumerate(data_kda_folders):
+    for index, folder_p in enumerate(data_kda_folders):
         print(index,'   ',folder_p)
         subprocess.getstatusoutput('rm -rf ' + folder_p)
         subprocess.getstatusoutput('cp -rf ' + data_cut_folders[index] + ' ' + folder_p)
@@ -198,7 +206,7 @@ if __name__ == "__main__":
                         # if '_key.csv' in file_name:
                             # toKDA_files.append()
                         if 'test' not in file_name and 'dev' not in file_name:
-                            kda(folder_p + dir + '/' + file_name.split('.csv')[0], dict_path, 5000)
+                            kda(dir ,folder_p + dir + '/' + file_name.split('.csv')[0], dict_path, 5000)
                             # toKDA_files.append(folder_p+dir + '/' + file_name)
                             # print('file_name=', file_name)
 

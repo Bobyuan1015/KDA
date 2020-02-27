@@ -2,16 +2,16 @@
 
 rm -rf log.txt experiments.csv checkpoints/*
 
-tasks="run_cnn.py run_rnn.py"
-#tasks="run_cnn.py"
-names="cnews_10 weibo_senti_100k chnsenticorp"
+#tasks="run_cnn.py run_rnn.py"
+tasks="run_rnn.py"
+names="weibo_senti_100k chnsenticorp cnews_10"
 #names="chnsenticorp"
 
 numbers=10
 #numbers=2
 
-data_size="data_500_kda5000 data_2000_kda5000 data_500 data_2000 data_orginal"
-#data_size="data_500_kda5000"
+data_size="data_500 data_500_kda5000  data_2000 data_2000_kda5000 data_orginal"
+#data_size="data_orginal"
 
 for name in $names;
   do
