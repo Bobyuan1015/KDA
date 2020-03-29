@@ -57,14 +57,14 @@ def augument_data(original_data, da_number):
                     eda_data(folder_p + dir + '/train.csv', folder_p + dir + '/tr', da_number)
                     break
         subprocess.getstatusoutput('find ' + folder_p + ' -name train.csv |xargs rm')
-        subprocess.getstatusoutput('find ' + folder_p +'. -name tr | xargs -i mv {} {}rain.csv')
+        subprocess.getstatusoutput('find ' + folder_p +'. -name tr | xargs -i mv {} {}ain.csv')
 
     print("Augmenting all the data, take times :" + str((time.time() - time_start) / 60) + ' mins')
 
 
 if __name__=="__main__":
     # To augment 5000 data
-    augument_data(['data/data_500', 'data/data_2000'], 5000)
+    # augument_data(['data/data_500', 'data/data_2000'], 5000)
 
     # To augment 10000 data
-    augument_data(['data/data_500', 'data/data_2000'], 5000)
+    augument_data(['data/data_500', 'data/data_2000'], 10000)
