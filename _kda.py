@@ -3,6 +3,7 @@ import re
 import time
 from collections import defaultdict
 import pandas as pd
+from sklearn.utils import shuffle
 import subprocess
 
 def augment(replace_sent: str, to_replace_list: list, synonym_dict: dict):
@@ -118,7 +119,7 @@ def kda(file_path, dict_path, newsize=-1):
 
     df['da_sentences'] = pd.DataFrame({'da_sentences': da_sentences})
     df['da_sentences_number'] = pd.DataFrame({'da_sentences_number': da_sentences_number})
-    df.to_csv(file_path+'_daDebug.csv', index=False) #for debugging
+    # df.to_csv(file_path+'_daDebug.csv', index=False) #for debugging
     if newsize == -1:
         selected_precentage = 1
         rest_number = da_total
@@ -134,7 +135,7 @@ def kda(file_path, dict_path, newsize=-1):
         new_labels.append(row['label'])
         selected_number = int(row['da_sentences_number']*selected_precentage)
 
-        if selected_number < 20 and selected_number>0 and newsize != -1:
+        if selected_number < 10 and selected_number>0 and newsize != -1:
             selected_number += 1
 
         if rest_number <= selected_number:
@@ -219,9 +220,11 @@ def merge_csv(files, merge_path):
             return None
         else:
             df = pd.read_csv(f)
+            df = shuffle(df)
             dfs.append(df)
     concat_df = pd.concat(dfs, axis=0, ignore_index=True)
-    concat_df.to_csv(merge_path,index=False)
+    concat_df = shuffle(concat_df)
+    concat_df.to_csv(merge_path, index=False)
     return merge_path
 
 def merge_path(path, out_file_name, sub_name_in_file='clean'):
