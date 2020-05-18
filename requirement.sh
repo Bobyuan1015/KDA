@@ -6,3 +6,4 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple scipy --user
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple numpy --user
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple jieba --user
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple synonyms --user
+

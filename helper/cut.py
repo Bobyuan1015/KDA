@@ -12,6 +12,7 @@ import subprocess
 import os
 from helper.keyword_extraction.keyextract_tfidf import tfidf_getKeywords
 from helper.keyword_extraction.keyextract_textrank import textrank_getKeywords
+from helper.webSearchCloseWords import web_search
 # import synonyms
 def func_timer(function):
     '''

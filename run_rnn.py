@@ -183,11 +183,9 @@ def test():
     time_dif = get_time_dif(start_time)
     print("Time usage:", time_dif)
 
-
 if __name__ == '__main__':
 
-    print('Configuring RNN model...',sys.argv)
-
+    print('Configuring RNN model...', sys.argv)
     if len(sys.argv) == 6 and sys.argv[1] in ['train', 'test']:
         config = TRNNConfig()
         t_name = sys.argv[3]
@@ -195,7 +193,6 @@ if __name__ == '__main__':
         data_dir = sys.argv[4]
         base_dir = 'data/' + data_dir + '/' + t_name
         classes = sys.argv[5].split('-')
-
 
         train_dir = os.path.join(base_dir, 'train.csv')
         test_dir = os.path.join(base_dir, 'test.csv')

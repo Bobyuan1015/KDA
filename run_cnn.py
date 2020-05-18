@@ -174,7 +174,7 @@ def test():
         y_pred_cls[start_id:end_id] = session.run(model.y_pred_cls, feed_dict=feed_dict)
 
     # 评估
-    print("Precision, Recall and F1-Score... type(y_test_cls)=",type(y_test_cls),y_test_cls.shape,"y_pred_cls=", type(y_pred_cls),y_pred_cls.shape,' categories=',categories)
+    print("Precision, Recall and F1-Score... type(y_test_cls)=", type(y_test_cls), y_test_cls.shape,"y_pred_cls=", type(y_pred_cls),y_pred_cls.shape, ' categories=', categories)
     print(metrics.classification_report(y_test_cls, y_pred_cls, target_names=categories))
 
     # 混淆矩阵
@@ -190,7 +190,6 @@ if __name__ == '__main__':
 
     print('Configuring CNN model...')
 
-
     if len(sys.argv) == 6 and sys.argv[1] in ['train', 'test']:
         config = TCNNConfig()
         t_name = sys.argv[3]
@@ -205,14 +204,14 @@ if __name__ == '__main__':
         vocab_dir = os.path.join('data/data_orginal/'+t_name, 'vocab.csv')
 
         if not os.path.exists(vocab_dir):  # 如果不存在词汇表，重建
-            print(' vocab_dir not exists: ',vocab_dir)
+            print(' vocab_dir not exists: ', vocab_dir)
             build_vocab('data/data_orginal/'+t_name+'/whole.csv', vocab_dir, config.vocab_size)
         categories, cat_to_id = read_category(classes)
         words, word_to_id = read_vocab(vocab_dir)
         config.vocab_size = len(words)
         config.num_classes = len(classes)
 
-        mode_name='textcnn'
+        mode_name = 'textcnn'
         save_dir = 'checkpoints/' + t_name + '/' + mode_name + '_' + t_name + "_" + data_dir + '_' + t_th + 'th'
         save_path = os.path.join(save_dir, 'best_validation')  # 最佳验证结果保存路径
 
